@@ -1,7 +1,7 @@
 # Predictive Model for Proactive Layer Feed Efficiency Using Random Forest Regressor
 
 ## Description
-This project is designed to predict Feed Conversion Ratio (FCR) and optimize feeding practices for egg production using a Random Forest Regressor. It leverages features such as total feed intake, feeding behavior metrics, and feed composition to enhance feed efficiency and support data-driven decision-making for sustainable poultry farming.
+This project is designed to predict Feed Conversion Ratio (FCR) and optimize feeding amounts for egg production using a Random Forest Regressor. It leverages features such as total feed intake, feeding behavior metrics, and feed composition to enhance feed efficiency and support data-driven decision-making for sustainable poultry farming.
 
 ## Installation Instructions
 1. Clone the repository: `git clone <https://github.com/Silas-ochieng/LAYER-FEED-EFFICIENCY.git>`
