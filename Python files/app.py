@@ -4,6 +4,8 @@ from dash import dcc, html, Input, Output, State
 import pandas as pd
 import joblib
 import plotly.express as px
+import warnings as wr
+wr.filterwarnings("ignore")
 
 app = Flask(__name__)
 
