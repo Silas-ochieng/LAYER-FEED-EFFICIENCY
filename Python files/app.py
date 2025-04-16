@@ -16,7 +16,7 @@ df = pd.read_csv('C:/PROJECT4.2/Updated_dataset.csv')
 # Define expected features
 EXPECTED_FEATURES = ['Feeding Intensity', 'Total feed intake (g)', 'No.  of feeding- bout/h', 
                      'No  of Head flicks/h', 'No.  of drinking/h', 'No. of preening/h',
-                     'No.  of feeder pecking/h', 'No. of cage pecking', 'No.  of Walking/h',
+                     'No.  of feeder pecking/h','No.  of Walking/h',
                      'GE  (kcal/kg)', 'N%']
 
 # Function to calculate feed requirements based on target egg weight and predicted FCR

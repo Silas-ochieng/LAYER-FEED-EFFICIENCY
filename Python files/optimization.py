@@ -10,7 +10,7 @@ model = joblib.load("model.pkl")
 
 # Define feature columns (ensure they match training features)
 feature_columns = ['Feeding Intensity', 'Total feed intake (g)', 'No.  of feeding- bout/h', 'No  of Head flicks/h',
-                   'No.  of drinking/h', 'No. of preening/h', 'No.  of feeder pecking/h', 'No. of cage pecking',
+                   'No.  of drinking/h', 'No. of preening/h', 'No.  of feeder pecking/h',
                    'No.  of Walking/h', 'GE  (kcal/kg)', 'N%']
 X = df[feature_columns]
 
