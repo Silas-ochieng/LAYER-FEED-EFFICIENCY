@@ -42,6 +42,14 @@ def generate_feeding_schedule(daily_feed):
 def home():
     return render_template('index.html')
 
+@app.route('/predict')
+def predict_page():
+    return render_template('predict.html')
+
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    return app.send_static_file(filename)
+
 @app.route('/get_bird_ids', methods=['GET'])
 def get_bird_ids():
    try:  
@@ -49,7 +57,7 @@ def get_bird_ids():
        return jsonify({'bird_ids': bird_ids})
    except Exception as e:
        return jsonify({"error": str(e)}), 500
-
+   
 @app.route('/predict', methods=['POST'])
 def predict():
     try:

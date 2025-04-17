@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed Efficiency Prediction | GreenNest Poultry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .form-select, .form-control, .btn {
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-green-50 text-gray-800">
+    <!-- Navigation Bar -->
+    <header class="bg-green-700 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold">GreenNest Poultry</h1>
+            <nav>
+                <ul class="flex space-x-6 text-lg">
+                    <li><a href="{{ url_for('home') }}" class="hover:text-yellow-300">Home</a></li>
+                    <li><a href="#about" class="hover:text-yellow-300">About</a></li>
+                    <li><a href="{{ url_for('predict_page') }}" class="hover:text-yellow-300">Predict</a></li>
+                    <li><a href="#contact" class="hover:text-yellow-300">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Prediction Tool Section -->
+    <section class="max-w-6xl mx-auto py-12 px-4">
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <h2 class="text-3xl font-bold text-green-700 mb-6 text-center">Feed Efficiency Prediction</h2>
+            
+            <!-- Bird ID Selection -->
+            <div class="mb-6">
+                <label for="bird_id" class="block text-lg font-medium text-gray-700 mb-2">Select Bird ID:</label>
+                <select id="bird_id" class="form-select w-full p-3 border border-gray-300 rounded-lg">
+                    <option value="" selected disabled>Loading...</option>
+                </select>
+            </div>
+
+            <!-- Category and Feature Selection -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
+                <div class="md:col-span-5">
+                    <label for="category" class="block text-lg font-medium text-gray-700 mb-2">Select Category:</label>
+                    <select id="category" class="form-select w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="" selected disabled>Choose Feature Category</option>
+                        <option value="Intensity">Intensity</option>
+                        <option value="Amount of feed consumed">Amount of feed consumed</option>
+                        <option value="Behavior Metrics">Behavior Metrics</option>
+                        <option value="Feed remains Composition">Feed remains Composition</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-5">
+                    <label for="feature" class="block text-lg font-medium text-gray-700 mb-2">Select Feature:</label>
+                    <select id="feature" class="form-select w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="" selected disabled>Choose Feature</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2 flex items-end">
+                    <button class="btn btn-primary w-full py-3" onclick="addFeature()">Add</button>
+                </div>
+            </div>
+
+            <!-- Input Table -->
+            <div class="overflow-x-auto">
+                <table class="table table-bordered w-full">
+                    <thead class="bg-green-100">
+                        <tr>
+                            <th class="py-3 px-4">Bird ID</th>
+                            <th class="py-3 px-4">Feature</th>
+                            <th class="py-3 px-4">Value (Unit)</th>
+                            <th class="py-3 px-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="featureTable"></tbody>
+                </table>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap justify-start gap-4 mt-6">
+                <button class="btn btn-success px-6 py-3" onclick="predict()">
+                    Predict Efficiency
+                </button>
+                <button class="btn btn-secondary px-6 py-3" onclick="exportData()">
+                    Export Data
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Prediction Results Modal -->
+    <div class="modal fade" id="predictionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-green-700 text-white">
+                    <h5 class="modal-title text-xl">Prediction Results</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-5">
+                    <div class="mb-4">
+                        <p class="text-lg"><strong>Predicted FCR:</strong> <span id="predictedFCR" class="font-bold text-green-700">-</span></p>
+                        <p class="text-lg"><strong>Alert:</strong> <span id="alertMessage" class="font-bold">-</span></p>
+                    </div>
+                    <hr class="my-4">
+                    <div class="form-group">
+                        <label for="target_egg_weight" class="block text-lg font-medium text-gray-700 mb-2">Enter Target Egg Weight (g):</label>
+                        <input type="number" id="target_egg_weight" class="form-control w-full p-3 border border-gray-300 rounded-lg" placeholder="e.g., 450" min="0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-warning" onclick="optimize()">Optimize Feed</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Optimal Feed Plan Display -->
+    <div id="optimalFeedOutput" class="max-w-6xl mx-auto mt-8 p-6 bg-green-50 rounded-lg shadow-sm hidden">
+        <h4 class="text-2xl font-bold text-green-700 mb-4">Optimal Feed Plan</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-lg"><strong>Predicted FCR:</strong> <span id="optimalPredictedFCR" class="font-bold">-</span></p>
+                <p class="text-lg"><strong>Total Feed Required:</strong> <span id="totalFeedRequired" class="font-bold">-</span></p>
+            </div>
+            <div>
+                <p class="text-lg"><strong>Daily Feed Per Bird:</strong> <span id="dailyFeedPerBird" class="font-bold">-</span></p>
+                <p class="text-lg"><strong>Feeding Schedule:</strong> <span id="feedingSchedule" class="font-bold">-</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-green-700 text-white text-center py-6 mt-12">
+        &copy; 2025 GreenNest Poultry Farm. All rights reserved.
+    </footer>
+
+   
+    <script>
+        const featureOptions = {
+            "Intensity": ['Feeding Intensity'],
+            "Amount of feed consumed": ["Total feed intake (g)"],
+            "Behavior Metrics": [
+                'No.  of feeding- bout/h', 
+                'No  of Head flicks/h', 
+                'No.  of drinking/h', 
+                'No. of preening/h',
+                'No.  of feeder pecking/h', 
+                'No.  of Walking/h'
+            ],
+            "Feed remains Composition": ['GE  (kcal/kg)', 'N%']
+        };
+
+        function loadBirdIds() {
+            fetch('/get_bird_ids')
+              .then(response => response.json())
+              .then(data => {
+                const birdSelect = document.getElementById('bird_id');
+                birdSelect.innerHTML = data.bird_ids.map(id => `<option value="${id}">${id}</option>`).join('');
+             })
+             .catch(err => console.error('Failed to load bird IDs:', err));
+        }
+
+        window.onload = () => {
+            loadBirdIds();
+            // clear prediction results
+            clearPredictionResults();
+            attachTableListeners(); // Attach listeners to table cells
+        };
+        document.getElementById("category").addEventListener("change", function () {
+            const category = this.value;
+            const featureSelect = document.getElementById("feature");
+            featureSelect.innerHTML = '<option value="" selected disabled>Choose Feature</option>';
+            featureOptions[category]?.forEach(feature => {
+                const option = document.createElement("option");
+                option.value = feature;
+                option.textContent = feature;
+                featureSelect.appendChild(option);
+            });
+        });
+
+        function addFeature() {
+            const birdId = document.getElementById("bird_id").value;
+            const feature = document.getElementById("feature").value;
+            if (!birdId || !feature) return alert("Please select Bird ID and Feature.");
+
+            const value = prompt(`Enter value for ${feature}:`);
+            if (value === null || value.trim() === "") return alert("Value cannot be empty.");
+            if (isNaN(value.trim())) return alert("Please enter a valid numeric value.");
+
+            const numericValue = parseFloat(value.trim());
+
+            // Feature-specific validation (same as before)
+            switch (feature) {
+                // ... (keep your existing validation logic)
+            }
+
+            const table = document.getElementById("featureTable");
+            const row = table.insertRow();
+            row.innerHTML = `<td>${birdId}</td><td>${feature}</td><td contenteditable="true">${value}</td>
+                <td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove();">Remove</button></td>`;
+            attachTableListeners(); // Reattach listeners after adding a new row
+        }
+        function clearPredictions() {
+        document.getElementById('predictedFCR').textContent = '';
+        document.getElementById('alertMessage').textContent = '';
+        document.getElementById('optimalFeedOutput').style.display = 'none'; // Hide the optimal feed output
+        predictionMade = false; // Reset prediction state
+        }
+        function attachTableListeners() {
+            const tableCells = document.querySelectorAll('#featureTable td[contenteditable="true"]');
+            tableCells.forEach(cell => {
+                cell.addEventListener('input', () => {
+                    predict(); // Recompute prediction on input change
+                });
+            });
+        }
+
+        function predict() {
+            const birdId = document.getElementById("bird_id").value;
+            if (!birdId) return alert("Please select a Bird ID.");
+
+            const rows = Array.from(document.querySelectorAll('#featureTable tr')).map(row => {
+                 return {
+                     birdId: row.cells[0].textContent,
+                     feature: row.cells[1].textContent,
+                     value: parseFloat(row.cells[2].textContent)
+                };
+            });
+            if (rows.length === 0) {
+            alert("Please add features before predicting.");
+            return;
+            }
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ bird_id: birdId, data: rows }) // Include bird_id in the payload
+            })
+             .then(response => response.json())
+             .then(data => {
+                 if (data.error) {
+                     alert(`Error: ${data.error}`);
+                 } else {
+                     document.getElementById('predictedFCR').textContent = `${data.predicted_FCR}`;
+                     document.getElementById('alertMessage').textContent = `${data.alert}`;
+                     const predictionModal = new bootstrap.Modal(document.getElementById('predictionModal'));
+                     predictionModal.show();
+                     predictionMade = true;  // set prediction state to true
+                 }
+            })
+            .catch(error => console.error('Error during prediction:', error));
+        }
+
+        function optimize() {
+            const birdId = document.getElementById("bird_id").value;
+            const targetEggWeight = document.getElementById("target_egg_weight").value;
+
+            if (!birdId) return alert("Please select a Bird ID.");
+            if (!targetEggWeight || isNaN(targetEggWeight)) return alert("Please enter a valid numeric value for target egg weight.");
+
+            const numericTargetEggWeight = parseFloat(targetEggWeight);
+            if (numericTargetEggWeight < 40 || numericTargetEggWeight > 600) {
+                return alert("Target egg weight must be between 40 g and 600 g.");
+            }
+
+            fetch('/optimize', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ bird_id: birdId, target_egg_weight_g: targetEggWeight })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(`Error: ${data.error}`);
+                } else {
+                    document.getElementById('optimalPredictedFCR').textContent = `${data.predicted_FCR}`;
+                    document.getElementById('totalFeedRequired').textContent = `${data.total_feed_required}`;
+                    document.getElementById('dailyFeedPerBird').textContent = `${data.daily_feed_per_bird}`;
+                    document.getElementById('feedingSchedule').textContent = `${data.feeding_schedule}`;
+                    document.getElementById('optimalFeedOutput').style.display = "block";
+
+                    const predictionModal = bootstrap.Modal.getInstance(document.getElementById('predictionModal'));
+                    predictionModal.hide();
+                }
+            })
+            .catch(error => console.error('Error during optimization:', error));
+        }
+
+        function exportData() {
+            const rows = Array.from(document.querySelectorAll('#featureTable tr')).map(row => row.innerText.replaceAll('\t', ',')).join('\n');
+            const blob = new Blob([rows], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'poultry_feed_data.csv';
+            link.click();
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

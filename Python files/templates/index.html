@@ -1,263 +1,328 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feed Efficiency Prediction</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GreenNest Poultry Farm</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    /* Slideshow Styles */
+    .slide {
+      transition: opacity 1s ease-in-out;
+    }
+    /* Animation for the text */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .slide-content {
+      animation: fadeIn 1s ease-out;
+    }
+  </style>
 </head>
-<body class="container mt-4">
-    <h2 class="text-center">Feed Efficiency Prediction</h2>
+<body class="bg-green-50 text-gray-800">
+  <!-- Navigation Bar -->
+  <header class="bg-green-700 text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold">GreenNest Poultry</h1>
+      <nav>
+        <ul class="flex space-x-6 text-lg">
+          <li><a href="{{ url_for('home') }}" class="hover:text-yellow-300">Home</a></li>
+          <li><a href="#about" class="hover:text-yellow-300">About</a></li>
+          <li><a href="{{ url_for('predict_page') }}" class="hover:text-yellow-300">Predict</a></li>
+          <li><a href="#contact" class="hover:text-yellow-300">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
 
-    <!-- Bird ID Selection -->
-    <div class="mb-3">
-        <label for="bird_id" class="form-label">Select Bird ID:</label>
-        <select id="bird_id" class="form-select">
-            <option value="" selected disabled>Loading...</option>
-        </select>
+  <!-- Hero Slideshow Section -->
+  <section class="relative h-[500px] overflow-hidden">
+    <!-- Slideshow Container -->
+    <div id="slideshow" class="h-full w-full relative">
+      <!-- Slide 1 -->
+      <div class="slide absolute inset-0 w-full h-full opacity-100 transition-opacity duration-1000">
+        <img 
+          src="{{ url_for('static', filename='images/hen-feeding.jpg') }}" 
+          alt="Hen feeding" 
+          class="w-full h-full object-cover"
+          loading="eager"
+        >
+        <div class="absolute inset-0 bg-green-900 bg-opacity-50 flex items-center justify-center">
+          <div class="slide-content text-center text-white px-6">
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">Welcome to GreenNest Poultry Farm</h2>
+            <p class="text-lg md:text-xl">Healthy Hens. Better Eggs. Smarter Feeding.</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Slide 2 -->
+      <div class="slide absolute inset-0 w-full h-full opacity-0 transition-opacity duration-1000">
+        <img 
+          src="{{ url_for('static', filename='images/farm-overview.jpg') }}" 
+          alt="Farm overview" 
+          class="w-full h-full object-cover"
+          loading="lazy"
+        >
+        <div class="absolute inset-0 bg-green-900 bg-opacity-50 flex items-center justify-center">
+          <div class="slide-content text-center text-white px-6">
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">Sustainable Farming</h2>
+            <p class="text-lg md:text-xl">Innovative techniques for better yield</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Slide 3 -->
+      <div class="slide absolute inset-0 w-full h-full opacity-0 transition-opacity duration-1000">
+        <img 
+          src="{{ url_for('static', filename='images/poultry-house.jpg') }}" 
+          alt="Poultry house" 
+          class="w-full h-full object-cover"
+          loading="lazy"
+        >
+        <div class="absolute inset-0 bg-green-900 bg-opacity-50 flex items-center justify-center">
+          <div class="slide-content text-center text-white px-6">
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">Premium Facilities</h2>
+            <p class="text-lg md:text-xl">Optimal conditions for poultry health</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Navigation Dots -->
+    <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+      <button class="w-3 h-3 rounded-full bg-white bg-opacity-100 dot-btn" data-index="0" aria-label="Show slide 1"></button>
+      <button class="w-3 h-3 rounded-full bg-white bg-opacity-50 dot-btn" data-index="1" aria-label="Show slide 2"></button>
+      <button class="w-3 h-3 rounded-full bg-white bg-opacity-50 dot-btn" data-index="2" aria-label="Show slide 3"></button>
     </div>
 
-    <!-- Category and Feature Selection -->
-    <div class="row">
-        <div class="col-md-5">
-            <label for="category" class="form-label">Select Category:</label>
-            <select id="category" class="form-select">
-                <option value="" selected disabled>Choose Feature Category</option>
-                <option value="Intensity">Intensity</option>
-                <option value="Amount of feed consumed">Amount of feed consumed</option>
-                <option value="Behavior Metrics">Behavior Metrics</option>
-                <option value="Feed remains Composition">Feed remains Composition</option>
-            </select>
-        </div>
+    <!-- Navigation Arrows -->
+    <button class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-30 hover:bg-opacity-50 text-white p-2 rounded-full focus:outline-none" id="prevBtn" aria-label="Previous slide">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+    <button class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-30 hover:bg-opacity-50 text-white p-2 rounded-full focus:outline-none" id="nextBtn" aria-label="Next slide">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+  </section>
 
-        <div class="col-md-5">
-            <label for="feature" class="form-label">Select Feature:</label>
-            <select id="feature" class="form-select">
-                <option value="" selected disabled>Choose Feature</option>
-            </select>
-        </div>
-
-        <div class="col-md-2 d-flex align-items-end">
-            <button class="btn btn-primary w-100" onclick="addFeature()">Add</button>
-        </div>
+  <!-- About Section -->
+  <section id="about" class="max-w-5xl mx-auto py-16 px-4">
+    <div class="flex flex-col md:flex-row gap-8 items-center">
+      <div class="md:w-1/2">
+        <img 
+          src="{{ url_for('static', filename='images/farm-team.jpg') }}" 
+          alt="Our farm team" 
+          class="rounded-lg shadow-lg w-full h-auto"
+          loading="lazy"
+        >
+      </div>
+      <div class="md:w-1/2">
+        <h3 class="text-3xl font-bold text-green-700 mb-4">About Us</h3>
+        <p class="text-lg leading-relaxed mb-4">
+          GreenNest Poultry Farm is dedicated to sustainable egg production through smart farming techniques.
+          We focus on efficient feeding practices powered by data-driven insights to ensure both hen welfare and productivity.
+        </p>
+        <p class="text-lg leading-relaxed">
+          Our team of experts combines traditional farming knowledge with cutting-edge technology to deliver the highest quality products while maintaining environmental sustainability.
+        </p>
+      </div>
     </div>
+  </section>
 
-    <!-- Input Table -->
-    <table class="table table-bordered mt-3">
-        <thead>
-            <tr>
-                <th>Bird ID</th>
-                <th>Feature</th>
-                <th>Value (Unit)</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="featureTable">
-        </tbody>
-    </table>
-
-    <!-- Predict Button -->
-    <div class="d-flex justify-content-start mb-3">
-        <button class="btn btn-success" onclick="predict()">Predict</button>
-        <button class="btn btn-secondary ms-2" onclick="exportData()">Export Data</button>
+  <!-- Prediction Section -->
+  <section id="prediction" class="bg-green-100 py-16 px-4">
+    <div class="max-w-5xl mx-auto">
+      <h3 class="text-3xl font-bold text-green-700 mb-4">Prediction</h3>
+      <p class="text-lg mb-6">
+        Use our smart prediction tools to forecast feed efficiency and egg production trends based on your farm data.
+      </p>
+      <div class="flex flex-col md:flex-row gap-6">
+        <div class="md:w-1/2 bg-white p-6 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold text-green-700 mb-3">Feed Efficiency Analysis</h4>
+          <p class="mb-4">Get accurate predictions of your feed conversion ratio (FCR) to optimize costs.</p>
+          <img src="{{ url_for('static', filename='images/feed-analysis.jpg') }}" alt="Feed analysis" class="rounded mb-3 w-full h-48 object-cover">
+        </div>
+        <div class="md:w-1/2 bg-white p-6 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold text-green-700 mb-3">Production Forecasting</h4>
+          <p class="mb-4">Predict egg production trends based on historical data and current conditions.</p>
+          <img src="{{ url_for('static', filename='images/egg-production.jpg') }}" alt="Egg production" class="rounded mb-3 w-full h-48 object-cover">
+        </div>
+      </div>
+      <div class="text-center mt-8">
+        <a href="{{ url_for('predict_page') }}" class="inline-block bg-green-700 hover:bg-green-800 text-white text-lg font-semibold py-3 px-8 rounded-lg transition transform hover:scale-105">
+          Start Predicting Now
+        </a>
+      </div>
     </div>
+  </section>
 
-    <!-- Prediction Results Modal -->
-    <div class="modal fade" id="predictionModal" tabindex="-1" aria-labelledby="predictionModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="predictionModalLabel">Prediction Results</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p><strong>Predicted FCR:</strong> <span id="predictedFCR"></span></p>
-                    <p><strong>Alert:</strong> <span id="alertMessage"></span></p>
-                    <hr>
-                    <label for="target_egg_weight" class="form-label">Enter Target Egg Weight (g):</label>
-                    <input type="number" id="target_egg_weight" class="form-control" placeholder="e.g., 450" min="0">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-warning" onclick="optimize()">Optimize Feed</button>
-                </div>
+  <!-- Contact Section -->
+  <section id="contact" class="max-w-5xl mx-auto py-16 px-4">
+    <h3 class="text-3xl font-bold text-green-700 mb-6 text-center">Contact Us</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold mb-4 text-green-700">Get In Touch</h4>
+          <p class="text-lg mb-2"><span class="font-medium">Email:</span> info@greennestfarm.com</p>
+          <p class="text-lg mb-2"><span class="font-medium">Phone:</span> +254 712 345678</p>
+          <p class="text-lg mb-4"><span class="font-medium">Location:</span> Meru County, Kenya</p>
+          <img src="{{ url_for('static', filename='images/farm-location.jpg') }}" alt="Farm location" class="rounded w-full h-48 object-cover">
+        </div>
+      </div>
+      <div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h4 class="text-xl font-semibold mb-4 text-green-700">Business Hours</h4>
+          <ul class="space-y-2">
+            <li class="flex justify-between"><span>Monday-Friday:</span> <span>8:00 AM - 5:00 PM</span></li>
+            <li class="flex justify-between"><span>Saturday:</span> <span>9:00 AM - 2:00 PM</span></li>
+            <li class="flex justify-between"><span>Sunday:</span> <span>Closed</span></li>
+          </ul>
+          <div class="mt-6">
+            <h5 class="font-medium mb-2">Follow Us</h5>
+            <div class="flex space-x-4">
+              <a href="#" class="text-green-700 hover:text-green-500">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd"></path>
+                </svg>
+              </a>
+              <a href="#" class="text-green-700 hover:text-green-500">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd"></path>
+                </svg>
+              </a>
+              <a href="#" class="text-green-700 hover:text-green-500">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path>
+                </svg>
+              </a>
             </div>
+          </div>
         </div>
+      </div>
     </div>
+  </section>
 
-    <!-- Optimal Feed Plan Display -->
-    <div id="optimalFeedOutput" class="mt-4 alert alert-info" style="display: none;">
-        <h4>Optimal Feed Plan</h4>
-        <p><strong>Predicted FCR:</strong> <span id="optimalPredictedFCR"></span></p>
-        <p><strong>Total Feed Required:</strong> <span id="totalFeedRequired"></span></p>
-        <p><strong>Daily Feed Per Bird:</strong> <span id="dailyFeedPerBird"></span></p>
-        <p><strong>Feeding Schedule:</strong> <span id="feedingSchedule"></span></p>
+  <!-- Footer -->
+  <footer class="bg-green-700 text-white py-8">
+    <div class="max-w-5xl mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div>
+          <h4 class="text-xl font-bold mb-4">GreenNest Poultry</h4>
+          <p>Innovative poultry farming solutions for sustainable egg production.</p>
+        </div>
+        <div>
+          <h4 class="text-xl font-bold mb-4">Quick Links</h4>
+          <ul class="space-y-2">
+            <li><a href="{{ url_for('home') }}" class="hover:underline">Home</a></li>
+            <li><a href="#about" class="hover:underline">About Us</a></li>
+            <li><a href="{{ url_for('predict_page') }}" class="hover:underline">Prediction Tool</a></li>
+            <li><a href="#contact" class="hover:underline">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-xl font-bold mb-4">Newsletter</h4>
+          <form class="flex flex-col space-y-2">
+            <input type="email" placeholder="Your email" class="px-4 py-2 rounded text-gray-800">
+            <button type="submit" class="bg-yellow-400 hover:bg-yellow-500 text-green-800 font-medium py-2 px-4 rounded">Subscribe</button>
+          </form>
+        </div>
+      </div>
+      <div class="border-t border-green-600 mt-8 pt-6 text-center">
+        <p>&copy; 2025 GreenNest Poultry Farm. All rights reserved.</p>
+      </div>
     </div>
+  </footer>
 
-    <script>
-        const featureOptions = {
-            "Intensity": ['Feeding Intensity'],
-            "Amount of feed consumed": ["Total feed intake (g)"],
-            "Behavior Metrics": [
-                'No.  of feeding- bout/h', 
-                'No  of Head flicks/h', 
-                'No.  of drinking/h', 
-                'No. of preening/h',
-                'No.  of feeder pecking/h', 
-                'No.  of Walking/h'
-            ],
-            "Feed remains Composition": ['GE  (kcal/kg)', 'N%']
-        };
-
-        function loadBirdIds() {
-            fetch('/get_bird_ids')
-              .then(response => response.json())
-              .then(data => {
-                const birdSelect = document.getElementById('bird_id');
-                birdSelect.innerHTML = data.bird_ids.map(id => `<option value="${id}">${id}</option>`).join('');
-             })
-             .catch(err => console.error('Failed to load bird IDs:', err));
-        }
-
-        window.onload = () => {
-            loadBirdIds();
-            // clear prediction results
-            clearPredictionResults();
-            attachTableListeners(); // Attach listeners to table cells
-        };
-        document.getElementById("category").addEventListener("change", function () {
-            const category = this.value;
-            const featureSelect = document.getElementById("feature");
-            featureSelect.innerHTML = '<option value="" selected disabled>Choose Feature</option>';
-            featureOptions[category]?.forEach(feature => {
-                const option = document.createElement("option");
-                option.value = feature;
-                option.textContent = feature;
-                featureSelect.appendChild(option);
-            });
+  <!-- Slideshow JavaScript -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const slides = document.querySelectorAll('.slide');
+      const dots = document.querySelectorAll('.dot-btn');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      let currentIndex = 0;
+      const slideInterval = 5000; // 5 seconds
+      let interval;
+      
+      // Initialize slideshow
+      function initSlideshow() {
+        showSlide(currentIndex);
+        startInterval();
+        
+        // Pause on hover
+        const slideshow = document.getElementById('slideshow');
+        slideshow.addEventListener('mouseenter', pauseSlideshow);
+        slideshow.addEventListener('mouseleave', startInterval);
+        
+        // Navigation events
+        prevBtn.addEventListener('click', prevSlide);
+        nextBtn.addEventListener('click', nextSlide);
+        
+        // Dot navigation
+        dots.forEach(dot => {
+          dot.addEventListener('click', () => {
+            const index = parseInt(dot.dataset.index);
+            goToSlide(index);
+          });
         });
-
-        function addFeature() {
-            const birdId = document.getElementById("bird_id").value;
-            const feature = document.getElementById("feature").value;
-            if (!birdId || !feature) return alert("Please select Bird ID and Feature.");
-
-            const value = prompt(`Enter value for ${feature}:`);
-            if (value === null || value.trim() === "") return alert("Value cannot be empty.");
-            if (isNaN(value.trim())) return alert("Please enter a valid numeric value.");
-
-            const numericValue = parseFloat(value.trim());
-
-            // Feature-specific validation (same as before)
-            switch (feature) {
-                // ... (keep your existing validation logic)
-            }
-
-            const table = document.getElementById("featureTable");
-            const row = table.insertRow();
-            row.innerHTML = `<td>${birdId}</td><td>${feature}</td><td contenteditable="true">${value}</td>
-                <td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove();">Remove</button></td>`;
-            attachTableListeners(); // Reattach listeners after adding a new row
-        }
-        function clearPredictions() {
-        document.getElementById('predictedFCR').textContent = '';
-        document.getElementById('alertMessage').textContent = '';
-        document.getElementById('optimalFeedOutput').style.display = 'none'; // Hide the optimal feed output
-        predictionMade = false; // Reset prediction state
-        }
-        function attachTableListeners() {
-            const tableCells = document.querySelectorAll('#featureTable td[contenteditable="true"]');
-            tableCells.forEach(cell => {
-                cell.addEventListener('input', () => {
-                    predict(); // Recompute prediction on input change
-                });
-            });
-        }
-
-        function predict() {
-            const birdId = document.getElementById("bird_id").value;
-            if (!birdId) return alert("Please select a Bird ID.");
-
-            const rows = Array.from(document.querySelectorAll('#featureTable tr')).map(row => {
-                 return {
-                     birdId: row.cells[0].textContent,
-                     feature: row.cells[1].textContent,
-                     value: parseFloat(row.cells[2].textContent)
-                };
-            });
-            if (rows.length === 0) {
-            alert("Please add features before predicting.");
-            return;
-            }
-            fetch('/predict', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ bird_id: birdId, data: rows }) // Include bird_id in the payload
-            })
-             .then(response => response.json())
-             .then(data => {
-                 if (data.error) {
-                     alert(`Error: ${data.error}`);
-                 } else {
-                     document.getElementById('predictedFCR').textContent = `${data.predicted_FCR}`;
-                     document.getElementById('alertMessage').textContent = `${data.alert}`;
-                     const predictionModal = new bootstrap.Modal(document.getElementById('predictionModal'));
-                     predictionModal.show();
-                     predictionMade = true;  // set prediction state to true
-                 }
-            })
-            .catch(error => console.error('Error during prediction:', error));
-        }
-
-        function optimize() {
-            const birdId = document.getElementById("bird_id").value;
-            const targetEggWeight = document.getElementById("target_egg_weight").value;
-
-            if (!birdId) return alert("Please select a Bird ID.");
-            if (!targetEggWeight || isNaN(targetEggWeight)) return alert("Please enter a valid numeric value for target egg weight.");
-
-            const numericTargetEggWeight = parseFloat(targetEggWeight);
-            if (numericTargetEggWeight < 40 || numericTargetEggWeight > 600) {
-                return alert("Target egg weight must be between 40 g and 600 g.");
-            }
-
-            fetch('/optimize', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ bird_id: birdId, target_egg_weight_g: targetEggWeight })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert(`Error: ${data.error}`);
-                } else {
-                    document.getElementById('optimalPredictedFCR').textContent = `${data.predicted_FCR}`;
-                    document.getElementById('totalFeedRequired').textContent = `${data.total_feed_required}`;
-                    document.getElementById('dailyFeedPerBird').textContent = `${data.daily_feed_per_bird}`;
-                    document.getElementById('feedingSchedule').textContent = `${data.feeding_schedule}`;
-                    document.getElementById('optimalFeedOutput').style.display = "block";
-
-                    const predictionModal = bootstrap.Modal.getInstance(document.getElementById('predictionModal'));
-                    predictionModal.hide();
-                }
-            })
-            .catch(error => console.error('Error during optimization:', error));
-        }
-
-        function exportData() {
-            const rows = Array.from(document.querySelectorAll('#featureTable tr')).map(row => row.innerText.replaceAll('\t', ',')).join('\n');
-            const blob = new Blob([rows], { type: 'text/csv' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'poultry_feed_data.csv';
-            link.click();
-        }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowLeft') prevSlide();
+          if (e.key === 'ArrowRight') nextSlide();
+        });
+      }
+      
+      // Show current slide
+      function showSlide(index) {
+        slides.forEach((slide, i) => {
+          slide.style.opacity = i === index ? '1' : '0';
+        });
+        
+        dots.forEach((dot, i) => {
+          dot.classList.toggle('bg-opacity-100', i === index);
+          dot.classList.toggle('bg-opacity-50', i !== index);
+        });
+        
+        currentIndex = index;
+      }
+      
+      // Auto-advance slides
+      function nextSlide() {
+        const newIndex = (currentIndex + 1) % slides.length;
+        goToSlide(newIndex);
+      }
+      
+      function prevSlide() {
+        const newIndex = (currentIndex - 1 + slides.length) % slides.length;
+        goToSlide(newIndex);
+      }
+      
+      function goToSlide(index) {
+        clearInterval(interval);
+        showSlide(index);
+        startInterval();
+      }
+      
+      function startInterval() {
+        clearInterval(interval);
+        interval = setInterval(nextSlide, slideInterval);
+      }
+      
+      function pauseSlideshow() {
+        clearInterval(interval);
+      }
+      
+      // Initialize everything
+      initSlideshow();
+    });
+  </script>
 </body>
 </html>
