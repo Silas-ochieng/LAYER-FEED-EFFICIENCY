@@ -14,6 +14,28 @@
         .form-select, .form-control, .btn {
             border-radius: 0.5rem;
         }
+        .feature-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+        }
+        .feature-section h3 {
+            color: #2c7a7b;
+            margin-bottom: 1rem;
+        }
+        .validation-warning {
+            color: #e53e3e;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .history-item {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 0;
+        }
+        .history-item:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body class="bg-green-50 text-gray-800">
@@ -26,6 +48,7 @@
                     <li><a href="{{ url_for('home') }}" class="hover:text-yellow-300">Home</a></li>
                     <li><a href="#about" class="hover:text-yellow-300">About</a></li>
                     <li><a href="{{ url_for('predict_page') }}" class="hover:text-yellow-300">Predict</a></li>
+                    <li><a href="#history" class="hover:text-yellow-300">History</a></li>
                     <li><a href="#contact" class="hover:text-yellow-300">Contact</a></li>
                 </ul>
             </nav>
@@ -37,52 +60,99 @@
         <div class="bg-white rounded-lg shadow-md p-8">
             <h2 class="text-3xl font-bold text-green-700 mb-6 text-center">Feed Efficiency Prediction</h2>
             
-            <!-- Bird ID Selection -->
-            <div class="mb-6">
-                <label for="bird_id" class="block text-lg font-medium text-gray-700 mb-2">Select Bird ID:</label>
-                <select id="bird_id" class="form-select w-full p-3 border border-gray-300 rounded-lg">
-                    <option value="" selected disabled>Loading...</option>
-                </select>
+            <!-- Validation Warnings -->
+            <div id="validationWarnings" class="mb-4 hidden">
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-yellow-800">Validation Notes</h3>
+                            <div id="warningMessages" class="mt-2 text-sm text-yellow-700"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <!-- Category and Feature Selection -->
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
-                <div class="md:col-span-5">
-                    <label for="category" class="block text-lg font-medium text-gray-700 mb-2">Select Category:</label>
-                    <select id="category" class="form-select w-full p-3 border border-gray-300 rounded-lg">
-                        <option value="" selected disabled>Choose Feature Category</option>
-                        <option value="Intensity">Intensity</option>
-                        <option value="Amount of feed consumed">Amount of feed consumed</option>
-                        <option value="Behavior Metrics">Behavior Metrics</option>
-                        <option value="Feed remains Composition">Feed remains Composition</option>
-                    </select>
-                </div>
-
-                <div class="md:col-span-5">
-                    <label for="feature" class="block text-lg font-medium text-gray-700 mb-2">Select Feature:</label>
-                    <select id="feature" class="form-select w-full p-3 border border-gray-300 rounded-lg">
-                        <option value="" selected disabled>Choose Feature</option>
-                    </select>
-                </div>
-
-                <div class="md:col-span-2 flex items-end">
-                    <button class="btn btn-primary w-full py-3" onclick="addFeature()">Add</button>
+            
+            <!-- Intensity Features -->
+            <div class="feature-section">
+                <h3 class="text-xl font-semibold">Intensity</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="feeding_intensity" class="block text-md font-medium text-gray-700 mb-1">Feeding Intensity (5-100 units)</label>
+                        <input type="number" id="feeding_intensity" class="form-control w-full p-2 border border-gray-300 rounded-lg" placeholder="Enter value" min="5" max="100">
+                        <div id="feeding_intensity_warning" class="validation-warning hidden"></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Input Table -->
-            <div class="overflow-x-auto">
-                <table class="table table-bordered w-full">
-                    <thead class="bg-green-100">
-                        <tr>
-                            <th class="py-3 px-4">Bird ID</th>
-                            <th class="py-3 px-4">Feature</th>
-                            <th class="py-3 px-4">Value (Unit)</th>
-                            <th class="py-3 px-4">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="featureTable"></tbody>
-                </table>
+            <!-- Amount of Feed Consumed -->
+            <div class="feature-section">
+                <h3 class="text-xl font-semibold">Amount of Feed Consumed</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="total_feed_intake" class="block text-md font-medium text-gray-700 mb-1">Total feed intake (100-5000 g)</label>
+                        <input type="number" id="total_feed_intake" class="form-control w-full p-2 border border-gray-300 rounded-lg" placeholder="Enter value" min="100" max="5000" required>
+                        <div id="total_feed_intake_warning" class="validation-warning hidden"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Behavior Metrics -->
+            <div class="feature-section">
+                <h3 class="text-xl font-semibold">Behavior Metrics</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="feeding_bout" class="block text-md font-medium text-gray-700 mb-1">No. of feeding-bout/h (0-50)</label>
+                        <input type="number" id="feeding_bout" class="form-control w-full p-2 border border-gray-300 rounded-lg" placeholder="Enter value" min="0" max="50">
+                        <div id="feeding_bout_warning" class="validation-warning hidden"></div>
+                    </div>
+                    <div>
+                        <label for="head_flicks" class="block text-md font-medium text-gray-700 mb-1">No. of Head flicks/h (0-100)</label>
+                        <input type="number" id="head_flicks" class="form-control w-full p-2 border border-gray-300 rounded-lg" placeholder="Enter value" min="0" max="100">
+                        <div id="head_flicks_warning" class="validation-warning hidden"></div>
+                    </div>
+                    <div>
+                        <label for="drinking" class="block text-md font-medium text-gray-700 mb-1">No. of drinking/h (0-50)</label>
+                        <input type="number" id="drinking" class="form-control w-full p-2 border border-gray-300 rounded-lg" placeholder="Enter value" min="0" max="50">
+                        <div id="drinking_warning" class="validation-warning hidden"></div>
+                    </div>
+                    <div>
+                        <label for="preening" class="block text-md font-medium text-gray-700 mb-1">No. of preening/h (0-60)</label>
+                        <input type="number" id="preening" class="form-control w-full p-2 border border-gray-300 rounded-lg" placeholder="Enter value" min="0" max="60">
+                        <div id="preening_warning" class="validation-warning hidden"></div>
+                    </div>
+                    <div>
+                        <label for="feeder_pecking" class="block text-md font-medium text-gray-700 mb-1">No. of feeder pecking/h (0-200)</label>
+                        <input type="number" id="feeder_pecking" class="form-control w-full p-2 border border-gray-300 rounded-lg" placeholder="Enter value" min="0" max="200">
+                        <div id="feeder_pecking_warning" class="validation-warning hidden"></div>
+                    </div>
+                    <div>
+                        <label for="walking" class="block text-md font-medium text-gray-700 mb-1">No. of Walking/h (0-100)</label>
+                        <input type="number" id="walking" class="form-control w-full p-2 border border-gray-300 rounded-lg" placeholder="Enter value" min="0" max="100">
+                        <div id="walking_warning" class="validation-warning hidden"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feed Remains Composition -->
+            <div class="feature-section">
+                <h3 class="text-xl font-semibold">Feed Remains Composition</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="ge_kcal" class="block text-md font-medium text-gray-700 mb-1">GE (0-5000 kcal/kg)</label>
+                        <input type="number" id="ge_kcal" class="form-control w-full p-2 border border-gray-300 rounded-lg" placeholder="Enter value" min="0" max="5000">
+                        <div id="ge_kcal_warning" class="validation-warning hidden"></div>
+                    </div>
+                    <div>
+                        <label for="n_percent" class="block text-md font-medium text-gray-700 mb-1">N% (0-100)</label>
+                        <input type="number" id="n_percent" class="form-control w-full p-2 border border-gray-300 rounded-lg" placeholder="Enter value" min="0" max="100">
+                        <div id="n_percent_warning" class="validation-warning hidden"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Action Buttons -->
@@ -90,8 +160,8 @@
                 <button class="btn btn-success px-6 py-3" onclick="predict()">
                     Predict Efficiency
                 </button>
-                <button class="btn btn-secondary px-6 py-3" onclick="exportData()">
-                    Export Data
+                <button class="btn btn-secondary px-6 py-3" onclick="resetForm()">
+                    Reset Form
                 </button>
             </div>
         </div>
@@ -113,7 +183,7 @@
                     <hr class="my-4">
                     <div class="form-group">
                         <label for="target_egg_weight" class="block text-lg font-medium text-gray-700 mb-2">Enter Target Egg Weight (g):</label>
-                        <input type="number" id="target_egg_weight" class="form-control w-full p-3 border border-gray-300 rounded-lg" placeholder="e.g., 450" min="0">
+                        <input type="number" id="target_egg_weight" class="form-control w-full p-3 border border-gray-300 rounded-lg" placeholder="e.g., 450" min="0" max="1000">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -139,173 +209,258 @@
         </div>
     </div>
 
+    <!-- History Section -->
+    <section id="history" class="max-w-6xl mx-auto py-12 px-4">
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <h2 class="text-3xl font-bold text-green-700 mb-6 text-center">Prediction History</h2>
+            <div id="historyList" class="divide-y">
+                <!-- History items will be loaded here -->
+                <p class="text-center text-gray-500">Loading history...</p>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="bg-green-700 text-white text-center py-6 mt-12">
         &copy; 2025 GreenNest Poultry Farm. All rights reserved.
     </footer>
 
-   
     <script>
-        const featureOptions = {
-            "Intensity": ['Feeding Intensity'],
-            "Amount of feed consumed": ["Total feed intake (g)"],
-            "Behavior Metrics": [
-                'No.  of feeding- bout/h', 
-                'No  of Head flicks/h', 
-                'No.  of drinking/h', 
-                'No. of preening/h',
-                'No.  of feeder pecking/h', 
-                'No.  of Walking/h'
-            ],
-            "Feed remains Composition": ['GE  (kcal/kg)', 'N%']
-        };
-
-        function loadBirdIds() {
-            fetch('/get_bird_ids')
-              .then(response => response.json())
-              .then(data => {
-                const birdSelect = document.getElementById('bird_id');
-                birdSelect.innerHTML = data.bird_ids.map(id => `<option value="${id}">${id}</option>`).join('');
-             })
-             .catch(err => console.error('Failed to load bird IDs:', err));
-        }
-
-        window.onload = () => {
-            loadBirdIds();
-            // clear prediction results
-            clearPredictionResults();
-            attachTableListeners(); // Attach listeners to table cells
-        };
-        document.getElementById("category").addEventListener("change", function () {
-            const category = this.value;
-            const featureSelect = document.getElementById("feature");
-            featureSelect.innerHTML = '<option value="" selected disabled>Choose Feature</option>';
-            featureOptions[category]?.forEach(feature => {
-                const option = document.createElement("option");
-                option.value = feature;
-                option.textContent = feature;
-                featureSelect.appendChild(option);
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadHistory();
+            
+            // Add input validation for required fields
+            document.getElementById('total_feed_intake').addEventListener('blur', function() {
+                validateField('total_feed_intake', 100, 5000, 'Total feed intake must be between 100 and 5000 grams');
+            });
+            
+            document.getElementById('feeding_intensity').addEventListener('blur', function() {
+                validateField('feeding_intensity', 5, 100, 'Feeding intensity must be between 5 and 100 units');
             });
         });
 
-        function addFeature() {
-            const birdId = document.getElementById("bird_id").value;
-            const feature = document.getElementById("feature").value;
-            if (!birdId || !feature) return alert("Please select Bird ID and Feature.");
-
-            const value = prompt(`Enter value for ${feature}:`);
-            if (value === null || value.trim() === "") return alert("Value cannot be empty.");
-            if (isNaN(value.trim())) return alert("Please enter a valid numeric value.");
-
-            const numericValue = parseFloat(value.trim());
-
-            // Feature-specific validation (same as before)
-            switch (feature) {
-                // ... (keep your existing validation logic)
+        function validateField(fieldId, min, max, errorMessage) {
+            const field = document.getElementById(fieldId);
+            const warning = document.getElementById(`${fieldId}_warning`);
+            
+            if (field.value === '') {
+                warning.textContent = 'This field is required';
+                warning.classList.remove('hidden');
+                return false;
             }
+            
+            const value = parseFloat(field.value);
+            if (isNaN(value) || value < min || value > max) {
+                warning.textContent = errorMessage;
+                warning.classList.remove('hidden');
+                return false;
+            }
+            
+            warning.classList.add('hidden');
+            return true;
+        }
 
-            const table = document.getElementById("featureTable");
-            const row = table.insertRow();
-            row.innerHTML = `<td>${birdId}</td><td>${feature}</td><td contenteditable="true">${value}</td>
-                <td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove();">Remove</button></td>`;
-            attachTableListeners(); // Reattach listeners after adding a new row
+        function collectFormData() {
+            return {
+                feeding_intensity: document.getElementById("feeding_intensity").value,
+                total_feed_intake: document.getElementById("total_feed_intake").value,
+                feeding_bout: document.getElementById("feeding_bout").value,
+                head_flicks: document.getElementById("head_flicks").value,
+                drinking: document.getElementById("drinking").value,
+                preening: document.getElementById("preening").value,
+                feeder_pecking: document.getElementById("feeder_pecking").value,
+                walking: document.getElementById("walking").value,
+                ge_kcal: document.getElementById("ge_kcal").value,
+                n_percent: document.getElementById("n_percent").value
+            };
         }
-        function clearPredictions() {
-        document.getElementById('predictedFCR').textContent = '';
-        document.getElementById('alertMessage').textContent = '';
-        document.getElementById('optimalFeedOutput').style.display = 'none'; // Hide the optimal feed output
-        predictionMade = false; // Reset prediction state
-        }
-        function attachTableListeners() {
-            const tableCells = document.querySelectorAll('#featureTable td[contenteditable="true"]');
-            tableCells.forEach(cell => {
-                cell.addEventListener('input', () => {
-                    predict(); // Recompute prediction on input change
-                });
+
+        function resetForm() {
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.value = '';
             });
+            document.getElementById('optimalFeedOutput').classList.add('hidden');
+            document.querySelectorAll('.validation-warning').forEach(warning => {
+                warning.classList.add('hidden');
+            });
+            document.getElementById('validationWarnings').classList.add('hidden');
+        }
+
+        function showValidationWarnings(warnings) {
+            const warningsContainer = document.getElementById('warningMessages');
+            warningsContainer.innerHTML = '';
+            
+            if (warnings && warnings.length > 0) {
+                warnings.forEach(warning => {
+                    const p = document.createElement('p');
+                    p.textContent = warning;
+                    p.className = 'mb-1';
+                    warningsContainer.appendChild(p);
+                });
+                document.getElementById('validationWarnings').classList.remove('hidden');
+            } else {
+                document.getElementById('validationWarnings').classList.add('hidden');
+            }
         }
 
         function predict() {
-            const birdId = document.getElementById("bird_id").value;
-            if (!birdId) return alert("Please select a Bird ID.");
-
-            const rows = Array.from(document.querySelectorAll('#featureTable tr')).map(row => {
-                 return {
-                     birdId: row.cells[0].textContent,
-                     feature: row.cells[1].textContent,
-                     value: parseFloat(row.cells[2].textContent)
-                };
-            });
-            if (rows.length === 0) {
-            alert("Please add features before predicting.");
-            return;
+            // Validate required fields
+            const isValidTotalFeed = validateField('total_feed_intake', 100, 5000, 'Total feed intake must be between 100 and 5000 grams');
+            const isValidIntensity = validateField('feeding_intensity', 5, 100, 'Feeding intensity must be between 5 and 100 units');
+            
+            if (!isValidTotalFeed || !isValidIntensity) {
+                return;
             }
+
+            const formData = collectFormData();
+            
             fetch('/predict', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ bird_id: birdId, data: rows }) // Include bird_id in the payload
+                body: JSON.stringify(formData)
             })
-             .then(response => response.json())
-             .then(data => {
-                 if (data.error) {
-                     alert(`Error: ${data.error}`);
-                 } else {
-                     document.getElementById('predictedFCR').textContent = `${data.predicted_FCR}`;
-                     document.getElementById('alertMessage').textContent = `${data.alert}`;
-                     const predictionModal = new bootstrap.Modal(document.getElementById('predictionModal'));
-                     predictionModal.show();
-                     predictionMade = true;  // set prediction state to true
-                 }
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
             })
-            .catch(error => console.error('Error during prediction:', error));
+            .then(data => {
+                if (data.error) {
+                    alert(`Error: ${data.error}`);
+                } else {
+                    document.getElementById('predictedFCR').textContent = data.predicted_FCR;
+                    document.getElementById('alertMessage').textContent = data.alert;
+                    
+                    // Show validation warnings if any
+                    if (data.validation_notes) {
+                        showValidationWarnings(data.validation_notes);
+                    }
+                    
+                    const predictionModal = new bootstrap.Modal(document.getElementById('predictionModal'));
+                    predictionModal.show();
+                    
+                    // Reload history to include new prediction
+                    loadHistory();
+                }
+            })
+            .catch(error => {
+                console.error('Error during prediction:', error);
+                alert(`Error: ${error.error || 'An unexpected error occurred'}`);
+            });
         }
 
         function optimize() {
-            const birdId = document.getElementById("bird_id").value;
             const targetEggWeight = document.getElementById("target_egg_weight").value;
 
-            if (!birdId) return alert("Please select a Bird ID.");
-            if (!targetEggWeight || isNaN(targetEggWeight)) return alert("Please enter a valid numeric value for target egg weight.");
+            if (!targetEggWeight || isNaN(targetEggWeight)) {
+                alert("Please enter a valid numeric value for target egg weight.");
+                return;
+            }
 
             const numericTargetEggWeight = parseFloat(targetEggWeight);
-            if (numericTargetEggWeight < 40 || numericTargetEggWeight > 600) {
-                return alert("Target egg weight must be between 40 g and 600 g.");
+            if (numericTargetEggWeight <= 200 || numericTargetEggWeight > 700) {
+                alert("Target egg weight must be between 200 and 700 grams.");
+                return;
             }
+
+            const formData = collectFormData();
+            formData.target_egg_weight_g = targetEggWeight;
+            formData.predicted_FCR = parseFloat(document.getElementById('predictedFCR').textContent);
 
             fetch('/optimize', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ bird_id: birdId, target_egg_weight_g: targetEggWeight })
+                body: JSON.stringify(formData)
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.error) {
                     alert(`Error: ${data.error}`);
                 } else {
-                    document.getElementById('optimalPredictedFCR').textContent = `${data.predicted_FCR}`;
-                    document.getElementById('totalFeedRequired').textContent = `${data.total_feed_required}`;
-                    document.getElementById('dailyFeedPerBird').textContent = `${data.daily_feed_per_bird}`;
-                    document.getElementById('feedingSchedule').textContent = `${data.feeding_schedule}`;
-                    document.getElementById('optimalFeedOutput').style.display = "block";
-
+                    document.getElementById('optimalPredictedFCR').textContent = data.predicted_FCR;
+                    document.getElementById('totalFeedRequired').textContent = data.total_feed_required;
+                    document.getElementById('dailyFeedPerBird').textContent = data.daily_feed_per_bird;
+                    
+                    // Format feeding schedule
+                    if (typeof data.feeding_schedule === 'string') {
+                        document.getElementById('feedingSchedule').textContent = data.feeding_schedule;
+                    } else {
+                        document.getElementById('feedingSchedule').textContent = 
+                            `Morning: ${data.feeding_schedule['Morning (6 AM - 8 AM)']}, Afternoon: ${data.feeding_schedule['Afternoon (3 PM - 5 PM)']}`;
+                    }
+                    
+                    document.getElementById('optimalFeedOutput').classList.remove('hidden');
+                    
                     const predictionModal = bootstrap.Modal.getInstance(document.getElementById('predictionModal'));
                     predictionModal.hide();
+                    
+                    // Reload history to include optimization results
+                    loadHistory();
                 }
             })
-            .catch(error => console.error('Error during optimization:', error));
+            .catch(error => {
+                console.error('Error during optimization:', error);
+                alert(`Error: ${error.error || 'An unexpected error occurred'}`);
+            });
         }
 
-        function exportData() {
-            const rows = Array.from(document.querySelectorAll('#featureTable tr')).map(row => row.innerText.replaceAll('\t', ',')).join('\n');
-            const blob = new Blob([rows], { type: 'text/csv' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'poultry_feed_data.csv';
-            link.click();
+        function loadHistory() {
+            fetch('/history')
+            .then(response => response.json())
+            .then(data => {
+                const historyList = document.getElementById('historyList');
+                
+                if (data.error) {
+                    historyList.innerHTML = `<p class="text-center text-red-500">${data.error}</p>`;
+                    return;
+                }
+                
+                if (data.history.length === 0) {
+                    historyList.innerHTML = '<p class="text-center text-gray-500">No prediction history found</p>';
+                    return;
+                }
+                
+                historyList.innerHTML = '';
+                data.history.forEach(item => {
+                    const date = new Date(item.timestamp);
+                    const dateStr = date.toLocaleString();
+                    
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    historyItem.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-medium text-gray-900">${dateStr}</h3>
+                                <p class="text-sm text-gray-600">Predicted FCR: ${item.predicted_fcr}</p>
+                                <p class="text-sm ${item.alert.includes('Warning') ? 'text-red-600' : 'text-green-600'}">${item.alert}</p>
+                            </div>
+                            ${item.total_feed_required ? `
+                            <div class="text-right">
+                                <p class="text-sm">Feed: ${item.total_feed_required}g</p>
+                                <p class="text-sm">Daily: ${item.daily_feed_per_bird}g</p>
+                            </div>
+                            ` : ''}
+                        </div>
+                    `;
+                    historyList.appendChild(historyItem);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading history:', error);
+                document.getElementById('historyList').innerHTML = 
+                    '<p class="text-center text-red-500">Failed to load history</p>';
+            });
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
