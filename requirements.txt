@@ -1,0 +1,7 @@
+Flask
+dash
+pandas
+joblib
+plotly
+sqlite3
+gunicorn
